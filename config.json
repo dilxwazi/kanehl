@@ -1,0 +1,9 @@
+{
+    "token": "YOUR_TOKEN_HERE",
+    "application_id": "APPLICATION_ID",
+    "command_id": "COMMAND_ID",
+    "command_name": "COMMAND_NAME",
+    "version": 0,
+    "guild_id": "GUILD_ID",
+    "channel_id": "CHANNEL_ID"
+}
