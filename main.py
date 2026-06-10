@@ -16,14 +16,13 @@ application_id = config["application_id"]
 command_id = config["command_id"]
 command_name = config["command_name"]
 version = config["version"]
-guild_id = config["guild_id"]
-channel_id = config["channel_id"]
+servers = config["servers"]
 
 def make_bot(token):
     bot = commands.Bot(command_prefix="$", self_bot=True)
     session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
 
-    async def trigger_command():
+    async def trigger_command(guild_id, channel_id):
         headers = {
             'Authorization': token,
             'Content-Type': 'application/json',
@@ -47,9 +46,9 @@ def make_bot(token):
         async with aiohttp.ClientSession() as session:
             async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
                 if resp.status == 204:
-                    print(f"✅ [{token[:10]}...] Successfully triggered.")
+                    print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
-                    print(f"❌ [{token[:10]}...] Failed: {resp.status}")
+                    print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
                     print(await resp.text())
 
     @bot.event
@@ -69,7 +68,8 @@ def make_bot(token):
 
     @tasks.loop(hours=2, minutes=1)
     async def repeat():
-        await trigger_command()
+        for server in servers:
+            await trigger_command(server["guild_id"], server["channel_id"])
 
     return bot
 
