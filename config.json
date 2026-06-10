@@ -1,9 +1,9 @@
 {
-    "token": "YOUR_TOKEN_HERE",
-    "application_id": "APPLICATION_ID",
-    "command_id": "COMMAND_ID",
-    "command_name": "COMMAND_NAME",
-    "version": 0,
-    "guild_id": "GUILD_ID",
-    "channel_id": "CHANNEL_ID"
+    "token": "MTM1MDQ1Njc2MDIwNDUyNTYwOA.Gq03ke.7RX3sJ69GnFd1UJIWCFPKvASZBDvPInYaUxw3k",
+    "application_id": "302050872383242240",
+    "command_id": "947088344167366698",
+    "command_name": "bump",
+    "version": 1051151064008769576,
+    "guild_id": "1203920114727125012",
+    "channel_id": "1453489131425501295"
 }
