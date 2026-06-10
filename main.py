@@ -66,7 +66,7 @@ async def stop(ctx):
     repeat.stop()
     await ctx.send("🛑 Bump task stopped.")
 
-@tasks.loop(seconds=10)
+@tasks.loop(minutes=1)
 async def repeat():
     await trigger_command()
 
