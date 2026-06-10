@@ -66,6 +66,7 @@ def make_bot(token):
         repeat.stop()
         await ctx.send("🛑 Bump task stopped.")
 
+    #
     @tasks.loop(hours=2, minutes=1)
     async def repeat():
         for server in servers:
