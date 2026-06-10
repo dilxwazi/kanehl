@@ -68,7 +68,7 @@ def make_bot(token):
         await ctx.send("🛑 Bump task stopped.")
 
     ##@tasks.loop(hours=2, minutes=1)
-    @tasks.loop(secounds=10)
+    @tasks.loop(seconds=10)
     async def repeat():
         await trigger_command()
 
