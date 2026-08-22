@@ -65,7 +65,7 @@ class BumpBot(commands.Bot):
 
         try:
             async with self.session.post("https://discord.com", headers=headers, json=payload) as resp:
-                if resp.status in:
+                if resp.status == 200 or resp.status == 204:
                     print(f"✅ [{self.token[:10]}...] Befehl erfolgreich gesendet in Guild {guild_id}")
                 else:
                     print(f"❌ [{self.token[:10]}...] API-Fehler (Status {resp.status}) in Guild {guild_id}")
