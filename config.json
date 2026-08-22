@@ -1,5 +1,5 @@
 {
-    "tokens": ["MTM1MDQ1Njc2MDIwNDUyNTYwOA.GNAF1E.A82SA3Obj6N1x5cxaiCSrqefYstWoD6eiyoXnQ"],
+    "tokens": ["MTM1MDQ1Njc2MDIwNDUyNTYwOA.GNAF1E.A82SA3Obj6N1x5cxaiCSrqefYstWoD6eiyoXnQ", "MTUxNDgwNDMxNjc4NTk5OTk1Mg.GAYf33.6-eZvXRclnyrq_6zC5AxZF0l8WdumRaiMsLrUw"],
     "application_id": "302050872383242240",
     "command_id": "947088344167366698",
     "command_name": "bump",
@@ -12,6 +12,11 @@
         {
             "guild_id": "1459882449357242501",
             "channel_id": "1514251505941872721"
+        },
+        {
+            "guild_id": "1540108951625138287",
+            "channel_id": "1540702768375791626"
         }
+        
     ]
 }
