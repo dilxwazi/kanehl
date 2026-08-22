@@ -80,33 +80,16 @@ class BumpBot(commands.Bot):
         for server in SERVERS:
             guild_id = int(server["guild_id"])
             channel_id = int(server["channel_id"])
-            invite_code = server.get("invite")
 
             guild = self.get_guild(guild_id)
             
             if guild is None:
-                print(f"⚠️ [{self.token[:10]}...] Nicht auf Server {guild_id}. Versuche beizutreten...")
-                
-                if not invite_code:
-                    print(f"❌ [{self.token[:10]}...] Beitritt unmöglich: Kein 'invite' in der config.json hinterlegt.")
-                    continue
-
-                try:
-                    await self.accept_invite(invite_code)
-                    print(f"📥 [{self.token[:10]}...] Erfolgreich über Invite beigetreten! Warte kurz auf Cache-Update...")
-                    await asyncio.sleep(5)
-                    
-                    guild = self.get_guild(guild_id)
-                    if guild is None:
-                        print(f"❌ [{self.token[:10]}...] Beitritt schien erfolgreich, Server wurde aber nicht im Cache gefunden.")
-                        continue
-                except discord.HTTPException as e:
-                    print(f"❌ [{self.token[:10]}...] Beitritt zu Server fehlgeschlagen: {e}")
-                    continue
+                print(f"⚠️ [{self.token[:10]}...] Überspringe: Account ist nicht auf Server {guild_id}")
+                continue
 
             channel = guild.get_channel(channel_id)
             if channel is None:
-                print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' existiert nicht oder keine Rechte!")
+                print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' nicht sichtbar/keine Rechte!")
                 continue
 
             print(f"🚀 [{self.token[:10]}...] Valide! Sende Interaktion für Server '{guild.name}'...")
@@ -117,6 +100,7 @@ class BumpBot(commands.Bot):
     @bump_loop.before_loop
     async def before_bump_loop(self):
         await self.wait_until_ready()
+        await asyncio.sleep(10)
 
 async def main():
     bots = []
