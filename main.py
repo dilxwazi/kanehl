@@ -17,9 +17,6 @@ command_name = config["command_name"]
 version = config["version"]
 servers = config["servers"]
 
-# Das Lock sorgt dafür, dass die Bots nacheinander drankommen
-loop_lock = asyncio.Lock()
-
 def make_bot(token):
     bot = commands.Bot(command_prefix="$", self_bot=True)
     session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
@@ -29,7 +26,7 @@ def make_bot(token):
             'Authorization': token,
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            "Referer": f"https://discord.com{guild_id}/{channel_id}",
+            "Referer": f"https://discord.com/channels/{guild_id}/{channel_id}",
         }
         payload = {
             "type": 2,
@@ -46,7 +43,7 @@ def make_bot(token):
             }
         }
         async with aiohttp.ClientSession() as session:
-            async with session.post("https://discord.com", headers=headers, json=payload) as resp:
+            async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
@@ -56,13 +53,11 @@ def make_bot(token):
     @bot.event
     async def on_ready():
         print(f"{bot.user} is now online.")
-        if not repeat.is_running():
-            repeat.start()
+        repeat.start()
 
     @bot.command()
     async def start(ctx):
-        if not repeat.is_running():
-            repeat.start()
+        repeat.start()
         await ctx.send("✅ Bump task started.")
 
     @bot.command()
@@ -72,15 +67,8 @@ def make_bot(token):
 
     @tasks.loop(hours=2, minutes=1)
     async def repeat():
-        # Blockiert andere Bots, bis dieser Bot komplett fertig ist
-        async with loop_lock:
-            for server in servers:
-                await trigger_command(server["guild_id"], server["channel_id"])
-                await asyncio.sleep(1) 
-            
-            # Warte exakt 10 Sekunden, bevor das Lock für den nächsten Bot freigegeben wird
-            print(f"⏳ [{token[:10]}...] Fertig. Warte 10 Sekunden vor dem nächsten Token...")
-            await asyncio.sleep(10)
+        for server in servers:
+            await trigger_command(server["guild_id"], server["channel_id"])
 
     return bot
 
@@ -88,5 +76,4 @@ async def main():
     bots = [make_bot(token) for token in TOKENS]
     await asyncio.gather(*[bot.start(token) for bot, token in zip(bots, TOKENS)])
 
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
