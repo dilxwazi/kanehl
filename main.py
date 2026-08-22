@@ -12,8 +12,8 @@ with open("config.json") as f:
     config = json.load(f)
 
 TOKENS = config["tokens"]
-APPLICATION_ID = int(config["application_id"])
-COMMAND_ID = int(config["command_id"])
+APPLICATION_ID = config["application_id"]
+COMMAND_ID = config["command_id"]
 COMMAND_NAME = config["command_name"]
 VERSION = config["version"]
 SERVERS = config["servers"]
@@ -23,7 +23,7 @@ class BumpBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.token = token
         self.session = None 
-        self.custom_session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
+        self.session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
 
     async def setup_hook(self):
         self.session = aiohttp.ClientSession()
@@ -45,18 +45,15 @@ class BumpBot(commands.Bot):
             "Referer": f"https://discord.com{guild_id}/{channel_id}",
         }
         
-        session_id = getattr(self, "_connection", None)
-        session_id = getattr(session_id, "session_id", self.custom_session_id)
-
         payload = {
             "type": 2,
-            "application_id": str(APPLICATION_ID),
-            "guild_id": str(guild_id),
-            "channel_id": str(channel_id),
-            "session_id": session_id,
+            "application_id": APPLICATION_ID,
+            "guild_id": guild_id,
+            "channel_id": channel_id,
+            "session_id": self.session_id,
             "data": {
                 "version": VERSION,
-                "id": str(COMMAND_ID),
+                "id": COMMAND_ID,
                 "name": COMMAND_NAME,
                 "type": 1,
                 "options": []
@@ -66,9 +63,9 @@ class BumpBot(commands.Bot):
         try:
             async with self.session.post("https://discord.com", headers=headers, json=payload) as resp:
                 if resp.status == 200 or resp.status == 204:
-                    print(f"✅ [{self.token[:10]}...] Befehl erfolgreich gesendet in Guild {guild_id}")
+                    print(f"✅ [{self.token[:10]}...] Triggered in guild {guild_id}")
                 else:
-                    print(f"❌ [{self.token[:10]}...] API-Fehler (Status {resp.status}) in Guild {guild_id}")
+                    print(f"❌ [{self.token[:10]}...] Failed in guild {guild_id}: {resp.status}")
                     print(await resp.text())
         except Exception as e:
             print(f"⚠️ Netzwerkfehler bei Bot [{self.token[:10]}...]: {e}")
@@ -78,18 +75,17 @@ class BumpBot(commands.Bot):
         await asyncio.sleep(random.randint(2, 8))
         
         for server in SERVERS:
-            guild_id = int(server["guild_id"])
-            channel_id = int(server["channel_id"])
+            guild_id = server["guild_id"]
+            channel_id = server["channel_id"]
 
-            guild = self.get_guild(guild_id)
-            
+            guild = self.get_guild(int(guild_id))
             if guild is None:
                 print(f"⚠️ [{self.token[:10]}...] Überspringe: Account ist nicht auf Server {guild_id}")
                 continue
 
-            channel = guild.get_channel(channel_id)
+            channel = guild.get_channel(int(channel_id))
             if channel is None:
-                print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' nicht sichtbar/keine Rechte!")
+                print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' nicht sichtbar!")
                 continue
 
             print(f"🚀 [{self.token[:10]}...] Valide! Sende Interaktion für Server '{guild.name}'...")
