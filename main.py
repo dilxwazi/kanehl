@@ -12,8 +12,8 @@ with open("config.json") as f:
     config = json.load(f)
 
 TOKENS = config["tokens"]
-APPLICATION_ID = config["application_id"]
-COMMAND_ID = config["command_id"]
+APPLICATION_ID = int(config["application_id"])
+COMMAND_ID = int(config["command_id"])
 COMMAND_NAME = config["command_name"]
 VERSION = config["version"]
 SERVERS = config["servers"]
@@ -50,13 +50,13 @@ class BumpBot(commands.Bot):
 
         payload = {
             "type": 2,
-            "application_id": APPLICATION_ID,
+            "application_id": str(APPLICATION_ID),
             "guild_id": str(guild_id),
             "channel_id": str(channel_id),
             "session_id": session_id,
             "data": {
                 "version": VERSION,
-                "id": COMMAND_ID,
+                "id": str(COMMAND_ID),
                 "name": COMMAND_NAME,
                 "type": 1,
                 "options": []
@@ -69,6 +69,7 @@ class BumpBot(commands.Bot):
                     print(f"✅ [{self.token[:10]}...] Befehl erfolgreich gesendet in Guild {guild_id}")
                 else:
                     print(f"❌ [{self.token[:10]}...] API-Fehler (Status {resp.status}) in Guild {guild_id}")
+                    print(await resp.text())
         except Exception as e:
             print(f"⚠️ Netzwerkfehler bei Bot [{self.token[:10]}...]: {e}")
 
@@ -108,7 +109,7 @@ class BumpBot(commands.Bot):
                 print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' existiert nicht oder keine Rechte!")
                 continue
 
-            print(f"🚀 [{self.token[:10]}...] Valide! Sende Interaktion for Server '{guild.name}'...")
+            print(f"🚀 [{self.token[:10]}...] Valide! Sende Interaktion für Server '{guild.name}'...")
             await self.trigger_command(guild_id, channel_id)
             
             await asyncio.sleep(random.randint(3, 7))
