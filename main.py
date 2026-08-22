@@ -3,7 +3,6 @@ import json
 import aiohttp
 import asyncio
 import logging
-import discord
 from discord.ext import commands, tasks
 
 logging.getLogger('discord.state').setLevel(logging.ERROR)
@@ -12,102 +11,82 @@ with open("config.json") as f:
     config = json.load(f)
 
 TOKENS = config["tokens"]
-APPLICATION_ID = config["application_id"]
-COMMAND_ID = config["command_id"]
-COMMAND_NAME = config["command_name"]
-VERSION = config["version"]
-SERVERS = config["servers"]
+application_id = config["application_id"]
+command_id = config["command_id"]
+command_name = config["command_name"]
+version = config["version"]
+servers = config["servers"]
 
-class BumpBot(commands.Bot):
-    def __init__(self, token, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.token = token
-        self.session = None 
-        self.session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
+# Das Lock sorgt dafür, dass die Bots nacheinander drankommen
+loop_lock = asyncio.Lock()
 
-    async def setup_hook(self):
-        self.session = aiohttp.ClientSession()
-        self.bump_loop.start()
+def make_bot(token):
+    bot = commands.Bot(command_prefix="$", self_bot=True)
+    session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
 
-    async def close(self):
-        if self.session:
-            await self.session.close()
-        await super().close()
-
-    async def trigger_command(self, guild_id, channel_id):
-        if not self.session:
-            return
-
+    async def trigger_command(guild_id, channel_id):
         headers = {
-            'Authorization': self.token,
+            'Authorization': token,
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
             "Referer": f"https://discord.com{guild_id}/{channel_id}",
         }
-        
         payload = {
             "type": 2,
-            "application_id": APPLICATION_ID,
+            "application_id": application_id,
             "guild_id": guild_id,
             "channel_id": channel_id,
-            "session_id": self.session_id,
+            "session_id": session_id,
             "data": {
-                "version": VERSION,
-                "id": COMMAND_ID,
-                "name": COMMAND_NAME,
+                "version": version,
+                "id": command_id,
+                "name": command_name,
                 "type": 1,
                 "options": []
             }
         }
-
-        try:
-            async with self.session.post("https://discord.com", headers=headers, json=payload) as resp:
-                if resp.status == 200 or resp.status == 204:
-                    print(f"✅ [{self.token[:10]}...] Triggered in guild {guild_id}")
+        async with aiohttp.ClientSession() as session:
+            async with session.post("https://discord.com", headers=headers, json=payload) as resp:
+                if resp.status == 204:
+                    print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
-                    print(f"❌ [{self.token[:10]}...] Failed in guild {guild_id}: {resp.status}")
+                    print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
                     print(await resp.text())
-        except Exception as e:
-            print(f"⚠️ Netzwerkfehler bei Bot [{self.token[:10]}...]: {e}")
+
+    @bot.event
+    async def on_ready():
+        print(f"{bot.user} is now online.")
+        if not repeat.is_running():
+            repeat.start()
+
+    @bot.command()
+    async def start(ctx):
+        if not repeat.is_running():
+            repeat.start()
+        await ctx.send("✅ Bump task started.")
+
+    @bot.command()
+    async def stop(ctx):
+        repeat.stop()
+        await ctx.send("🛑 Bump task stopped.")
 
     @tasks.loop(hours=2, minutes=1)
-    async def bump_loop(self):
-        await asyncio.sleep(random.randint(2, 8))
-        
-        for server in SERVERS:
-            guild_id = server["guild_id"]
-            channel_id = server["channel_id"]
-
-            try:
-                guild = await self.fetch_guild(int(guild_id))
-                print(f"🔍 [{self.token[:10]}...] Bestätigt: Account ist auf Server '{guild.name}'")
-            except discord.Forbidden:
-                print(f"⚠️ [{self.token[:10]}...] Überspringe: Account ist NICHT auf Server {guild_id} (403 Forbidden)")
-                continue
-            except Exception as e:
-                print(f"⚠️ [{self.token[:10]}...] Fehler beim Server-Check für {guild_id}: {e}")
-                continue
-
-            print(f"🚀 [{self.token[:10]}...] Sende Interaktion für Server '{guild.name}'...")
-            await self.trigger_command(guild_id, channel_id)
+    async def repeat():
+        # Blockiert andere Bots, bis dieser Bot komplett fertig ist
+        async with loop_lock:
+            for server in servers:
+                await trigger_command(server["guild_id"], server["channel_id"])
+                await asyncio.sleep(1) 
             
-            await asyncio.sleep(random.randint(4, 9))
+            # Warte exakt 10 Sekunden, bevor das Lock für den nächsten Bot freigegeben wird
+            print(f"⏳ [{token[:10]}...] Fertig. Warte 10 Sekunden vor dem nächsten Token...")
+            await asyncio.sleep(10)
 
-    @bump_loop.before_loop
-    async def before_bump_loop(self):
-        await self.wait_until_ready()
-        await asyncio.sleep(3)
+    return bot
 
 async def main():
-    bots = []
-    for token in TOKENS:
-        bot = BumpBot(token=token, command_prefix="$", self_bot=True)
-        bots.append(bot)
-
+    bots = [make_bot(token) for token in TOKENS]
     await asyncio.gather(*[bot.start(token) for bot, token in zip(bots, TOKENS)])
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Skript manuell beendet.")
+    asyncio.run(main())
