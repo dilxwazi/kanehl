@@ -78,25 +78,25 @@ class BumpBot(commands.Bot):
             guild_id = server["guild_id"]
             channel_id = server["channel_id"]
 
-            guild = self.get_guild(int(guild_id))
-            if guild is None:
-                print(f"⚠️ [{self.token[:10]}...] Überspringe: Account ist nicht auf Server {guild_id}")
+            try:
+                guild = await self.fetch_guild(int(guild_id))
+                print(f"🔍 [{self.token[:10]}...] Bestätigt: Account ist auf Server '{guild.name}'")
+            except discord.Forbidden:
+                print(f"⚠️ [{self.token[:10]}...] Überspringe: Account ist NICHT auf Server {guild_id} (403 Forbidden)")
+                continue
+            except Exception as e:
+                print(f"⚠️ [{self.token[:10]}...] Fehler beim Server-Check für {guild_id}: {e}")
                 continue
 
-            channel = guild.get_channel(int(channel_id))
-            if channel is None:
-                print(f"⚠️ [{self.token[:10]}...] Kanal {channel_id} auf Server '{guild.name}' nicht sichtbar!")
-                continue
-
-            print(f"🚀 [{self.token[:10]}...] Valide! Sende Interaktion für Server '{guild.name}'...")
+            print(f"🚀 [{self.token[:10]}...] Sende Interaktion für Server '{guild.name}'...")
             await self.trigger_command(guild_id, channel_id)
             
-            await asyncio.sleep(random.randint(3, 7))
+            await asyncio.sleep(random.randint(4, 9))
 
     @bump_loop.before_loop
     async def before_bump_loop(self):
         await self.wait_until_ready()
-        await asyncio.sleep(10)
+        await asyncio.sleep(3)
 
 async def main():
     bots = []
