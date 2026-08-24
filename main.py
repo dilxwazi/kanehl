@@ -51,9 +51,8 @@ class SimpleBot(commands.Bot):
                         print(f"✅ [{self.token[:10]}...] Triggered in guild {guild_id}")
                     else:
                         print(f"❌ [{self.token[:10]}...] Failed in guild {guild_id}: {resp.status}")
-                        print(await resp.text())
-        except Exception as e:
-            print(f"⚠️ Netzwerkfehler bei Bot [{self.token[:10]}...]: {e}")
+        except Exception:
+            pass
 
     async def on_ready(self):
         print(f"👤 {self.user} ist online.")
