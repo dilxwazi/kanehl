@@ -26,7 +26,7 @@ def make_bot(token):
             'Authorization': token,
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            "Referer": f"https://discord.com/channels/{guild_id}/{channel_id}",
+            "Referer": f"https://discord.com{guild_id}/{channel_id}",
         }
         payload = {
             "type": 2,
@@ -43,7 +43,7 @@ def make_bot(token):
             }
         }
         async with aiohttp.ClientSession() as session:
-            async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
+            async with session.post("https://discord.com", headers=headers, json=payload) as resp:
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
@@ -69,6 +69,7 @@ def make_bot(token):
     async def repeat():
         for server in servers:
             await trigger_command(server["guild_id"], server["channel_id"])
+            await asyncio.sleep(30)
 
     return bot
 
