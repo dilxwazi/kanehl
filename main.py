@@ -22,18 +22,6 @@ class SimpleBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.token = token
         self.session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
-        self.joined_guilds = set()
-
-    async def fetch_joined_guilds(self):
-        headers = {'Authorization': self.token}
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get("https://discord.com", headers=headers) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        self.joined_guilds = {str(g["id"]) for g in data}
-        except Exception as e:
-            print(f"⚠️ Fehler beim Laden der Serverliste für [{self.token[:10]}...]: {e}")
 
     async def trigger_command(self, guild_id, channel_id):
         headers = {
@@ -73,18 +61,19 @@ class SimpleBot(commands.Bot):
 async def run_bump_cycle(bots):
     print("🔄 Starte neuen Bump-Durchgang für alle Bots...")
     for bot in bots:
-        await bot.fetch_joined_guilds()
+        joined_guild_ids = {str(guild.id) for guild in bot.guilds}
         
         for server in servers:
             g_id = str(server["guild_id"])
             c_id = str(server["channel_id"])
             
-            if g_id not in bot.joined_guilds:
+            if g_id not in joined_guild_ids:
                 print(f"⚠️ [{bot.token[:10]}...] Überspringe: Token ist nicht auf Server {g_id}")
                 continue
 
             await bot.trigger_command(g_id, c_id)
             await asyncio.sleep(30)
+            
     print("⏳ Durchgang beendet. Warte 2 Stunden und 1 Minute bis zum nächsten Mal...")
 
 async def main():
@@ -94,7 +83,8 @@ async def main():
         bots.append(bot)
         asyncio.create_task(bot.start(token))
 
-    await asyncio.sleep(5)
+    print("⏳ Warte 15 Sekunden, bis alle Bots eingeloggt sind und Server geladen haben...")
+    await asyncio.sleep(15)
 
     while True:
         await run_bump_cycle(bots)
