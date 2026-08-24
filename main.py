@@ -47,9 +47,10 @@ def make_bot(token):
             async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
+                    await asyncio.sleep(10)
                 else:
                     print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
-                    print(await resp.text())
+                    await asyncio.sleep(10)
 
     @bot.event
     async def on_ready():
