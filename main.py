@@ -17,6 +17,8 @@ command_name = config["command_name"]
 version = config["version"]
 servers = config["servers"]
 
+loop_lock = asyncio.Lock()
+
 def make_bot(token):
     bot = commands.Bot(command_prefix="$", self_bot=True)
     session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
@@ -26,7 +28,7 @@ def make_bot(token):
             'Authorization': token,
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            "Referer": f"https://discord.com{guild_id}/{channel_id}",
+            "Referer": f"https://discord.com/channels/{guild_id}/{channel_id}",
         }
         payload = {
             "type": 2,
@@ -43,7 +45,7 @@ def make_bot(token):
             }
         }
         async with aiohttp.ClientSession() as session:
-            async with session.post("https://discord.com", headers=headers, json=payload) as resp:
+            async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
@@ -68,8 +70,9 @@ def make_bot(token):
     @tasks.loop(hours=2, minutes=1)
     async def repeat():
         for server in servers:
-            await trigger_command(server["guild_id"], server["channel_id"])
-            await asyncio.sleep(30)
+            async with loop_lock:
+                await trigger_command(server["guild_id"], server["channel_id"])
+                await asyncio.sleep(30)
 
     return bot
 
