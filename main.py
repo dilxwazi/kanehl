@@ -67,7 +67,7 @@ def make_bot(token):
         repeat.stop()
         await ctx.send("🛑 Bump task stopped.")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(hours=2, minutes=1)
     async def repeat():
         for server in servers:
             await trigger_command(server["guild_id"], server["channel_id"])
