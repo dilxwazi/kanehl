@@ -47,7 +47,6 @@ class SimpleBot(commands.Bot):
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post("https://discord.com", headers=headers, json=payload) as resp:
-                    # Discord sendet 200 oder 204 bei erfolgreichen Interaktionen zurück
                     if resp.status in [200, 204]:
                         print(f"✅ [{self.token[:10]}...] Triggered in guild {guild_id}")
                     else:
@@ -56,12 +55,25 @@ class SimpleBot(commands.Bot):
             pass
 
     async def start_working_loop(self):
-        await asyncio.sleep(5)
+        # Gibt dem Bot etwas Zeit, um nach dem Login die Serverliste zu laden
+        await asyncio.sleep(15)
         
         while True:
             print(f"🔄 Starte neuen Bump-Durchgang für [{self.token[:10]}...]")
+            
+            # Holt die IDs der Server, auf denen der Bot aktuell wirklich online ist
+            joined_guild_ids = {str(guild.id) for guild in self.guilds}
+            
             for server in servers:
-                await self.trigger_command(server["guild_id"], server["channel_id"])
+                g_id = str(server["guild_id"])
+                c_id = str(server["channel_id"])
+                
+                # Wenn der Bot nicht auf dem Server ist, überspringt er ihn ohne Wartezeit
+                if g_id not in joined_guild_ids:
+                    print(f"⚠️ [{self.token[:10]}...] Überspringe: Token ist nicht auf Server {g_id}")
+                    continue
+
+                await self.trigger_command(g_id, c_id)
                 await asyncio.sleep(30)
             
             print("⏳ Durchgang beendet. Warte 2 Stunden und 1 Minute bis zum nächsten Mal...")
