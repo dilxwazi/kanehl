@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 
 logging.getLogger('discord.state').setLevel(logging.ERROR)
 
+# Load config
 with open("config.json") as f:
     config = json.load(f)
 
@@ -16,8 +17,6 @@ command_id = config["command_id"]
 command_name = config["command_name"]
 version = config["version"]
 servers = config["servers"]
-
-loop_lock = asyncio.Lock()
 
 def make_bot(token):
     bot = commands.Bot(command_prefix="$", self_bot=True)
@@ -46,11 +45,11 @@ def make_bot(token):
         }
         async with aiohttp.ClientSession() as session:
             async with session.post("https://discord.com", headers=headers, json=payload) as resp:
-                # Hier stand der Fehler. Jetzt wird korrekt auf 200 und 204 geprüft:
-                if resp.status in [200, 204]:
+                if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
                     print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
+                    print(await resp.text())
 
     @bot.event
     async def on_ready():
@@ -70,9 +69,8 @@ def make_bot(token):
     @tasks.loop(hours=2, minutes=1)
     async def repeat():
         for server in servers:
-            async with loop_lock:
-                await trigger_command(server["guild_id"], server["channel_id"])
-                await asyncio.sleep(30)
+            await trigger_command(server["guild_id"], server["channel_id"])
+            await asyncio.sleep(30)
 
     return bot
 
