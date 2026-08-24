@@ -23,13 +23,14 @@ def make_bot(token):
     bot = commands.Bot(command_prefix="$", self_bot=True)
     session_id = "".join(random.choice('0123456789abcdef') for _ in range(32))
 
-    async def trigger_command(guild_id, channel_id):
+    async def check_and_trigger(guild_id, channel_id):
         headers = {
             'Authorization': token,
             'Content-Type': 'application/json',
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-            "Referer": f"https://discord.com/channels/{guild_id}/{channel_id}",
+            "Referer": f"https://discord.com{guild_id}/{channel_id}",
         }
+        
         payload = {
             "type": 2,
             "application_id": application_id,
@@ -44,13 +45,21 @@ def make_bot(token):
                 "options": []
             }
         }
+        
         async with aiohttp.ClientSession() as session:
-            async with session.post("https://discord.com/api/v9/interactions", headers=headers, json=payload) as resp:
+            async with session.get(f"https://discord.com{guild_id}", headers={'Authorization': token}) as check_resp:
+                if check_resp.status in [403, 404]:
+                    print(f"⚠️ [{token[:10]}...] Überspringe: Token ist nicht auf Server {guild_id}")
+                    return False
+
+            async with session.post("https://discord.com", headers=headers, json=payload) as resp:
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
+                    return True
                 else:
                     print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
                     print(await resp.text())
+                    return True
 
     @bot.event
     async def on_ready():
@@ -71,8 +80,9 @@ def make_bot(token):
     async def repeat():
         for server in servers:
             async with loop_lock:
-                await trigger_command(server["guild_id"], server["channel_id"])
-                await asyncio.sleep(30)
+                was_sent = await check_and_trigger(server["guild_id"], server["channel_id"])
+                if was_sent:
+                    await asyncio.sleep(30)
 
     return bot
 
