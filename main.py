@@ -48,8 +48,8 @@ def make_bot(token):
                 if resp.status == 204:
                     print(f"✅ [{token[:10]}...] Triggered in guild {guild_id}")
                 else:
+                    # Nur noch die Fehlernummer anzeigen, kein HTML-Text mehr
                     print(f"❌ [{token[:10]}...] Failed in guild {guild_id}: {resp.status}")
-                    print(await resp.text())
 
     @bot.event
     async def on_ready():
