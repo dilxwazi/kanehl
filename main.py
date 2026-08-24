@@ -81,4 +81,3 @@ async def main():
     await asyncio.gather(*[bot.start(token) for bot, token in zip(bots, TOKENS)])
 
 asyncio.run(main())
-
