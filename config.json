@@ -1,7 +1,8 @@
 {
     "tokens": ["MTM1MDQ1Njc2MDIwNDUyNTYwOA.GNAF1E.A82SA3Obj6N1x5cxaiCSrqefYstWoD6eiyoXnQ", 
         "MTUxNDgwNDMxNjc4NTk5OTk1Mg.GAYf33.6-eZvXRclnyrq_6zC5AxZF0l8WdumRaiMsLrUw",
-        "MTM1MzA3MzA5NTcyODAzNzkzOA.GySKmy.mmpBUCeijmmjQ9uuAj6fn4EZFhjFLv5w-fzQVU"],
+        "MTM1MzA3MzA5NTcyODAzNzkzOA.GySKmy.mmpBUCeijmmjQ9uuAj6fn4EZFhjFLv5w-fzQVU",
+        "MTQ1NzgwMzM5NDYwNDMzOTIyMA.G-xQUz.iQw7dcwSv__9Zh5mrzAy30ber3eVcLQT1YAAzk"],
     "application_id": "302050872383242240",
     "command_id": "947088344167366698",
     "command_name": "bump",
