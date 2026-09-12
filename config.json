@@ -6,7 +6,8 @@
         "MTEwNzAyOTM0ODg4MTU0NzMzNQ.GX2k_n.XF0-h-u_i2rIC_OEKQSHeSvuvD-uRVUOumoo6s",
         "NzUzMzc5ODUyMDEwMTI3NDgx.GtuXlD.1dmbPdk6t4gb8m_8tgXpZCZ-E6bAbAZTE_wG0Q",
         "MTM1MjY4MTM1NTYyODI1MzE4NA.GPODdw.BZIyLdC255SJeQUejuhZrbTBvhya0A_wlkCY5o",
-        "MTM1MzQyMTc5OTQzMzQ0MTM1Mw.Gc4nO9.i_l5h-usPae5B7R3SOo6baiOaiqVdbFH_YsrYQ"],
+        "MTM1MzQyMTc5OTQzMzQ0MTM1Mw.Gc4nO9.i_l5h-usPae5B7R3SOo6baiOaiqVdbFH_YsrYQ",
+        "MTU0NzY0OTI2MjkyNDM0MTM4OQ.Gs5_rm.FEIwmL4eBRkucDmzAAtjcCiebKTk3mY4vENAkU"],
     "application_id": "302050872383242240",
     "command_id": "947088344167366698",
     "command_name": "bump",
@@ -43,6 +44,10 @@
         {
             "guild_id": "1543629494601130046",
             "channel_id": "1543629694446997531"
+        },
+        {
+            "guild_id": "1548363736815898757",
+            "channel_id": "1548363896686116905"
         }
     ]
 }
